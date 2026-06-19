@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>About Me — Quick Survey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+/* ── Reset ──────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+/* ── Tokens ─────────────────────────────────────────────────────────────── */
+:root {
+  --paper:   #FAFAF7;
+  --ink:     #1C1917;
+  --ink2:    #44403C;
+  --muted:   #78716C;
+  --rule:    #E8E4DD;
+  --sage:    #7C9E87;
+  --coral:   #C96A42;
+  --coral-l: #F2EAE4;
+  --sage-l:  #EBF1ED;
+  --sel:     #EBF1ED;
+}
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 0 16px 80px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 560px;
+  padding-top: 48px;
+}
+
+/* ── Screens ─────────────────────────────────────────────────────────────── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ── Progress ────────────────────────────────────────────────────────────── */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 40px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.progress.show { opacity: 1; }
+.progress-track {
+  flex: 1;
+  height: 2px;
+  background: var(--rule);
+  position: relative;
+}
+.progress-fill {
+  position: absolute;
+  left: 0; top: 0;
+  height: 100%;
+  background: var(--sage);
+  transition: width 0.5s ease;
+}
+.progress-dots {
+  display: flex;
+  gap: 6px;
+}
+.progress-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--rule);
+  transition: background 0.3s;
+}
+.progress-dot.done { background: var(--sage); }
+.progress-dot.active { background: var(--coral); }
+
+/* ── Welcome ─────────────────────────────────────────────────────────────── */
+.welcome-eyebrow {
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+.welcome-h {
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 600;
+  line-height: 1.18;
+  color: var(--ink);
+  margin-bottom: 20px;
+  letter-spacing: -0.02em;
+}
+.welcome-h em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--coral);
+}
+.welcome-body {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--ink2);
+  margin-bottom: 16px;
+}
+.welcome-body + .welcome-body { margin-top: -8px; }
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 24px 0 36px;
+}
+.chip {
+  padding: 5px 14px;
+  border: 1.5px solid var(--rule);
+  border-radius: 99px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* ── Divider ─────────────────────────────────────────────────────────────── */
+.divider {
+  border: none;
+  border-top: 1.5px solid var(--rule);
+  margin: 36px 0;
+}
+
+/* ── Section heading ─────────────────────────────────────────────────────── */
+.section-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.section-h {
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+.section-sub {
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+/* ── Fields ──────────────────────────────────────────────────────────────── */
+.field { margin-bottom: 24px; }
+.field label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink2);
+  margin-bottom: 8px;
+}
+.field input,
+.field select {
+  width: 100%;
+  padding: 12px 0;
+  border: none;
+  border-bottom: 1.5px solid var(--rule);
+  background: transparent;
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s;
+  border-radius: 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.field input:focus,
+.field select:focus {
+  border-color: var(--sage);
+}
+.field input::placeholder { color: #C4BFB8; }
+.field-err {
+  font-size: 0.78rem;
+  color: var(--coral);
+  margin-top: 5px;
+  display: none;
+  font-weight: 500;
+}
+.field.has-err input,
+.field.has-err select { border-color: var(--coral); }
+.field.has-err .field-err { display: block; }
+
+/* Select arrow */
+.select-wrap { position: relative; }
+.select-wrap::after {
+  content: '↓';
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+/* ── Question ─────────────────────────────────────────────────────────────── */
+.q-handnum {
+  font-family: 'Caveat', cursive;
+  font-size: 1.5rem;
+  color: var(--coral);
+  margin-bottom: 4px;
+  line-height: 1;
+}
+.q-text {
+  font-size: 1.22rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+  margin-bottom: 14px;
+  letter-spacing: -0.01em;
+}
+.q-hint {
+  background: var(--sage-l);
+  border-radius: 10px;
+  padding: 13px 16px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--ink2);
+  margin-bottom: 28px;
+}
+.q-hint strong { color: var(--sage); font-weight: 600; }
+
+/* ── Likert ───────────────────────────────────────────────────────────────── */
+.likert { display: flex; flex-direction: column; gap: 2px; }
+.l-opt {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 14px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s;
+  border: 1.5px solid transparent;
+  user-select: none;
+}
+.l-opt:hover { background: var(--coral-l); }
+.l-opt.picked {
+  background: var(--coral-l);
+  border-color: #D9845F;
+}
+.l-radio {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid #C4BFB8;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s;
+}
+.l-opt.picked .l-radio {
+  border-color: var(--coral);
+}
+.l-opt.picked .l-radio::after {
+  content: '';
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--coral);
+}
+.l-label {
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--ink2);
+  flex: 1;
+}
+.l-opt.picked .l-label { color: var(--ink); font-weight: 600; }
+.l-tag {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 400;
+  font-style: italic;
+}
+.q-err {
+  font-size: 0.78rem;
+  color: var(--coral);
+  font-weight: 500;
+  margin-top: 10px;
+  display: none;
+}
+.q-err.show { display: block; }
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+.btn-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 36px;
+  gap: 12px;
+}
+.btn {
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 28px;
+  transition: all 0.18s;
+  letter-spacing: 0.01em;
+}
+.btn-main {
+  background: var(--ink);
+  color: var(--paper);
+}
+.btn-main:hover { background: #3C3836; }
+.btn-main:active { background: #1C1917; }
+.btn-back {
+  background: transparent;
+  color: var(--muted);
+  padding-left: 0;
+}
+.btn-back:hover { color: var(--ink); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Thank you ────────────────────────────────────────────────────────────── */
+.ty-rule {
+  width: 40px;
+  height: 3px;
+  background: var(--sage);
+  border-radius: 2px;
+  margin: 0 auto 28px;
+}
+.ty-h {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 16px;
+}
+.ty-body {
+  text-align: center;
+  color: var(--ink2);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .wrap { padding-top: 32px; }
+  .btn-row { flex-wrap: wrap; }
+  .btn-main { width: 100%; text-align: center; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Progress dots -->
+  <div class="progress" id="prog">
+    <div class="progress-dots" id="progDots"></div>
+    <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+  </div>
+
+  <!-- ── Welcome ─────────────────────────────────────────────────────────── -->
+  <div class="screen active" id="s0">
+    <p class="welcome-eyebrow">NIT Calicut · Wellbeing Study</p>
+    <h1 class="welcome-h">A few questions<br><em>just about you.</em></h1>
+    <p class="welcome-body">
+      This is a short survey for kids and young people. We want to understand how you see yourself and the people around you.
+    </p>
+    <p class="welcome-body">
+      There are no right or wrong answers — whatever feels true for <em>you</em> is the right answer.
+    </p>
+    <div class="chips">
+      <span class="chip">8 questions</span>
+      <span class="chip">About 3 minutes</span>
+      <span class="chip">Your answers are private</span>
+    </div>
+    <button class="btn btn-main" onclick="goTo(1)">Start →</button>
+  </div>
+
+  <!-- ── About you ───────────────────────────────────────────────────────── -->
+  <div class="screen" id="s1">
+    <p class="section-label">About you</p>
+    <h2 class="section-h">First, a little about yourself.</h2>
+    <p class="section-sub">This helps us understand your answers better. We never share your name.</p>
+
+    <div class="field" id="f-name">
+      <label for="iName">Your name</label>
+      <input type="text" id="iName" placeholder="What should we call you?"/>
+      <div class="field-err">Please enter your name.</div>
+    </div>
+
+    <div class="field" id="f-age">
+      <label for="iAge">Your age</label>
+      <input type="number" id="iAge" placeholder="e.g. 13" min="5" max="25"/>
+      <div class="field-err">Please enter your age (between 5 and 25).</div>
+    </div>
+
+    <div class="field" id="f-gender">
+      <label for="iGender">You are a…</label>
+      <div class="select-wrap">
+        <select id="iGender">
+          <option value="">Choose one</option>
+          <option>Boy</option>
+          <option>Girl</option>
+          <option>Non-binary / Gender-diverse</option>
+          <option>Prefer not to say</option>
+        </select>
+      </div>
+      <div class="field-err">Please select one option.</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="goTo(0)">← Back</button>
+      <button class="btn btn-main" onclick="step1Next()">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ── Q screens 2–9 (generated) ──────────────────────────────────────── -->
+
+  <!-- ── Thank you ───────────────────────────────────────────────────────── -->
+  <div class="screen" id="s10">
+    <div class="ty-rule"></div>
+    <h2 class="ty-h">Thank you — you did great.</h2>
+    <p class="ty-body">
+      Your answers have been saved safely.<br>
+      You should feel proud for taking the time to think about yourself. That takes courage.
+    </p>
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+// ── Config ───────────────────────────────────────────────────────────────────
+const SCRIPT_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
+
+// ── Questions ────────────────────────────────────────────────────────────────
+const Qs = [
+  {
+    id: "q1",
+    text: "Do you like joining in and being part of what your friends or classmates are doing?",
+    hint: "Think about whether you enjoy helping a friend who's upset, joining group games at lunch, or asking classmates how they're getting on."
+  },
+  {
+    id: "q2",
+    text: "When you go somewhere new — a new class, a new place — do you feel okay and settle in quickly?",
+    hint: "Like your first day in a new school, or arriving at a birthday party where you don't know many people. Do you usually feel fine?"
+  },
+  {
+    id: "q3",
+    text: "Do you sometimes feel like you and other people are just very different from each other — like you're on a different planet?",
+    hint: "Do you ever think \"nobody here gets me\" or \"I'm just not like anyone else\"? That kind of feeling."
+  },
+  {
+    id: "q4",
+    text: "Do you usually prefer being on your own rather than being with other people?",
+    hint: "For example, at break time do you mostly sit by yourself? Do you feel more comfortable alone than in a group?"
+  },
+  {
+    id: "q5",
+    text: "Do you have a clear picture of who you are — your personality, what you believe in, what matters to you?",
+    hint: "Do you know whether you're the kind of person who is kind, brave, honest, creative? Do you have your own sense of what's right and wrong?"
+  },
+  {
+    id: "q6",
+    text: "Do you feel like you only really feel like yourself when other people are around?",
+    hint: "Do you feel empty or kind of lost when you're on your own — but much more like yourself when you're with friends or family?"
+  },
+  {
+    id: "q7",
+    text: "Do you ever feel like something inside you is broken, or not quite working the way it should?",
+    hint: "A bit like a toy that's cracked. A feeling that something is wrong deep inside, even if you can't put words on what it is."
+  },
+  {
+    id: "q8",
+    text: "Do the different parts of who you are feel mixed up or hard to fit together?",
+    hint: "Like being one person at home, a completely different person at school, and another with your friends — and none of them feel like the real you."
+  }
+];
+
+const opts = [
+  { v: 1, label: "Not at all",        tag: "Doesn't sound like me" },
+  { v: 2, label: "A little bit",      tag: "Sometimes, maybe" },
+  { v: 3, label: "Kind of",           tag: "True some of the time" },
+  { v: 4, label: "Quite a lot",       tag: "Often true" },
+  { v: 5, label: "Yes, very much",    tag: "That's totally me" },
+];
+
+// ── State ────────────────────────────────────────────────────────────────────
+let cur = 0;
+const ans = {};
+const TOTAL = 10; // s0 welcome, s1 about, s2-s9 questions, s10 thanks
+
+// ── Build question screens ───────────────────────────────────────────────────
+const wrap = document.querySelector('.wrap');
+const s10  = document.getElementById('s10');
+
+Qs.forEach((q, i) => {
+  const n = i + 2;
+  const isLast = i === Qs.length - 1;
+  const div = document.createElement('div');
+  div.className = 'screen';
+  div.id = `s${n}`;
+  div.innerHTML = `
+    <p class="q-handnum">${i + 1} / ${Qs.length}</p>
+    <p class="q-text">${q.text}</p>
+    <div class="q-hint">${q.hint}</div>
+    <div class="likert" id="l${q.id}">
+      ${opts.map(o => `
+        <div class="l-opt" data-v="${o.v}" onclick="pick('${q.id}',${o.v},this,${n})">
+          <div class="l-radio"></div>
+          <span class="l-label">${o.label}</span>
+          <span class="l-tag">${o.tag}</span>
+        </div>
+      `).join('')}
+    </div>
+    <p class="q-err" id="e${q.id}">Pick one to continue.</p>
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="goTo(${n - 1})">← Back</button>
+      <button class="btn btn-main" onclick="qNext('${q.id}',${n},${isLast})">
+        ${isLast ? 'Submit' : 'Next →'}
+      </button>
+    </div>
+  `;
+  wrap.insertBefore(div, s10);
+});
+
+// ── Progress dots ─────────────────────────────────────────────────────────────
+const dotsEl = document.getElementById('progDots');
+// 9 steps: s1 + 8 questions
+for (let i = 0; i < 9; i++) {
+  const d = document.createElement('div');
+  d.className = 'progress-dot';
+  d.id = `dot${i}`;
+  dotsEl.appendChild(d);
+}
+
+function updateProgress() {
+  const prog = document.getElementById('prog');
+  if (cur === 0 || cur === 10) { prog.classList.remove('show'); return; }
+  prog.classList.add('show');
+  // cur 1 = step 0, cur 2-9 = steps 1-8
+  const step = cur - 1; // 0..8
+  document.querySelectorAll('.progress-dot').forEach((d, i) => {
+    d.classList.remove('done','active');
+    if (i < step) d.classList.add('done');
+    if (i === step) d.classList.add('active');
+  });
+  document.getElementById('progFill').style.width = (step / 8 * 100) + '%';
+}
+
+// ── Nav ───────────────────────────────────────────────────────────────────────
+function goTo(n) {
+  document.getElementById(`s${cur}`).classList.remove('active');
+  cur = n;
+  document.getElementById(`s${cur}`).classList.add('active');
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Step 1 ────────────────────────────────────────────────────────────────────
+function step1Next() {
+  const name   = document.getElementById('iName').value.trim();
+  const age    = parseInt(document.getElementById('iAge').value);
+  const gender = document.getElementById('iGender').value;
+  const fName   = document.getElementById('f-name');
+  const fAge    = document.getElementById('f-age');
+  const fGender = document.getElementById('f-gender');
+  fName.classList.toggle('has-err', !name);
+  fAge.classList.toggle('has-err', !age || age < 5 || age > 25);
+  fGender.classList.toggle('has-err', !gender);
+  if (!name || !age || age < 5 || age > 25 || !gender) return;
+  ans.name = name; ans.age = age; ans.gender = gender;
+  goTo(2);
+}
+
+// ── Pick option ───────────────────────────────────────────────────────────────
+function pick(qid, v, el, screenN) {
+  document.querySelectorAll(`#l${qid} .l-opt`).forEach(o => o.classList.remove('picked'));
+  el.classList.add('picked');
+  ans[qid] = v;
+  document.getElementById(`e${qid}`).classList.remove('show');
+}
+
+// ── Q next ────────────────────────────────────────────────────────────────────
+function qNext(qid, screenN, isLast) {
+  if (!ans[qid]) { document.getElementById(`e${qid}`).classList.add('show'); return; }
+  if (isLast) { doSubmit(); } else { goTo(screenN + 1); }
+}
+
+// ── Submit ────────────────────────────────────────────────────────────────────
+async function doSubmit() {
+  const payload = {
+    timestamp: new Date().toISOString(),
+    name: ans.name, age: ans.age, gender: ans.gender,
+  };
+  Qs.forEach(q => { payload[q.id] = ans[q.id]; });
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch(e) { console.warn('Submit error', e); }
+  goTo(10);
+}
+</script>
+</body>
+</html>
