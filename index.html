@@ -604,11 +604,17 @@ async function doSubmit() {
     name: ans.name, age: ans.age, gender: ans.gender,
   };
   Qs.forEach(q => { payload[q.id] = ans[q.id]; });
+
+  // Use URLSearchParams — this is the ONLY body format allowed in no-cors mode.
+  // JSON with Content-Type: application/json triggers a preflight that no-cors blocks,
+  // causing e.postData to be null in Apps Script.
+  const body = new URLSearchParams(payload);
+
   try {
     await fetch(SCRIPT_URL, {
-      method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      method: 'POST',
+      mode: 'no-cors',
+      body: body,
     });
   } catch(e) { console.warn('Submit error', e); }
   goTo(10);
